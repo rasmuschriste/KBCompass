@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="all_destinations_preference">
+        <!--version|preconfigured|name|lat|lon|address|favorite|icon|-->
+        2|true|KB|55.786467|12.525813|DTU Bygning 101, 2800 Kongens Lyngby|true|local_bar¤
+        2|true|Hegnet|55.782790|12.517337|DTU Bygning 342, 2800 Kongens Lyngby|true|sports_bar¤
+        2|true|Diamanten|55.782748|12.521109|DTU Bygning 404, 2800 Kongens Lyngby|true|sports_bar¤
+        2|true|Diagonalen|55.789249|12.525664|DTU Bygning 116, 2800 Kongens Lyngby|true|sports_bar¤
+        2|true|Etheren|55.787508|12.518449|DTU Bygning 208, 2800 Kongens Lyngby|true|sports_bar¤
+        2|true|Verners|55.730752|12.400113|Lautrupvang 19, 2750 Ballerup|true|sports_bar¤
+    </string>
+
+</resources>

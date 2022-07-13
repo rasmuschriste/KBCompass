@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">KB Kompasset</string>
+
+    <string name="text_missing">Tekst mangler!</string>
+
+    <string name="back">Tilbage</string>
+    <string name="forward">Frem</string>
+
+    <string name="_continue">Fortsæt</string>
+    <string name="close">Luk</string>
+
+    <string name="cancel">Annuller</string>
+    <string name="confirm">Accepter</string>
+
+    <string name="dialog_request_location_permission_text">Applikationen skal bruge din placering for at virke. Tillad brug af placering i applikationens indstillinger.</string>
+    <string name="dialog_request_provider_enable_text">Slå lokalisering til i telefonens indstillinger.</string>
+    <string name="finding_locaiton">Finder din placering...</string>
+
+    <string name="action_show_on_map">Find på kort</string>
+    <string name="action_toggle_dark_mode">Toggle dark mode 😎</string>
+    <string name="missing_app_map">Mangler applikation til at vise retning!</string>
+
+    <string name="error">Fejl!</string>
+
+    <string name="open_menu">Åben menu</string>
+    <string name="close_menu">Luk menu</string>
+
+    <string name="actions">Handlinger</string>
+    <string name="settings">Indstillinger</string>
+    <string name="destinations">Destinationer</string>
+</resources>
