@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,7 +88,7 @@ fun PickDestinationShowMap(
             ) { _, destination ->
                 SimpleDestinationElement(
                     destination = destination,
-                    compassViewModel.distanceToDestination(destination = destination),
+                    destination.stateOfDistance.value,
                     compassViewModel.getIconResourceByName(destination.iconId),
                     onDestinationClicked,
                 )
@@ -134,7 +135,7 @@ fun PickDestinationCompass(
                 item {
                     SimpleDestinationElement(
                         destination = destination,
-                        compassViewModel.distanceToDestination(destination = destination),
+                        destination.stateOfDistance.value,
                         compassViewModel.getIconResourceByName(destination.iconId),
                         onDestinationClicked,
 
@@ -255,7 +256,7 @@ fun AdvDestinationPicker(
             ) { index, destination ->
                 AdvDestinationElement(
                     destination = destination,
-                    compassViewModel.distanceToDestination(destination = destination),
+                    destination.stateOfDistance.value,
                     index,
                     compassViewModel.getIconResourceByName(destination.iconId),
                     onDestinationClickedFavorite,

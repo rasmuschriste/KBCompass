@@ -1,6 +1,7 @@
 package dk.pressere.kbkompas.compass
 
 import android.location.Location
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 
 val TARGET_VERSION_CODE: Int = 2
@@ -19,18 +20,21 @@ class Destination(
     val stateOfIsFavorite = mutableStateOf(false)
     val stateOfDistance = mutableStateOf(0.0f) // Last seen distance to the destination
 
-    private val listeners : ArrayList<Pair<Float, DestinationDistanceListener>> = ArrayList()
+    private var listeners : ArrayList<Pair<Float, DestinationDistanceListener>> = ArrayList()
 
     fun registerListener(listener: DestinationDistanceListener, distanceTrigger: Float) {
         listeners.add(Pair(distanceTrigger, listener))
     }
 
     fun deRegisterListener(listener: DestinationDistanceListener) {
-        for (i in listeners.indices) {
-            if (listeners[i].second == listener) {
-                listeners.removeAt(i)
+        // Removing from the list can create problems elsewhere so we create a new one instead.
+        val newListeners : ArrayList<Pair<Float, DestinationDistanceListener>> = ArrayList()
+        for (l in listeners) {
+            if (l.second != listener) {
+                newListeners.add(l)
             }
         }
+        listeners = newListeners
     }
 
     fun updateDistance(distance : Float) {

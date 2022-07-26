@@ -1,24 +1,22 @@
 package dk.pressere.kbkompas.compass
 
 import android.app.Activity
-import android.util.Log
+import android.location.Location
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import dk.pressere.kbkompas.ErrorCode
 import dk.pressere.kbkompas.R
+import dk.pressere.kbkompas.achievements.*
 import dk.pressere.kbkompas.bearing_provider.BearingProvider
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.set
-import kotlin.collections.sortByDescending
 
 // Activity is needed here for the location system. Might remove later.
-class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Callback, LifecycleEventObserver {
+class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Callback,
+    LifecycleEventObserver {
     private var bearingOffset = 0f
     private var bearingCurrent = 0f
 
@@ -27,12 +25,9 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
     val targetRotation = mutableStateOf(0F)
     val nameDest = mutableStateOf(activity.getString(R.string.text_missing))
     val distDest = mutableStateOf(0.0F)
-    
+
     private var currentDestination = nullDestination
     private var lastDestination = nullDestination
-    
-
-    private val debugText = ""
 
     // Maps strings to drawable resource ids
     private val iconIdMap = HashMap<String, Int>()
@@ -43,12 +38,15 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
 
     val hasPermission = mutableStateOf(false)
 
-    private val errorHeap : TreeSet<Error> = TreeSet()
+    private val errorHeap: TreeSet<Error> = TreeSet()
     val currentErrorCode = mutableStateOf(ErrorCode.ERROR_NONE)
+
     // The error with higher priority will be shown first.
     private val errorPermissionMissing = Error(10, ErrorCode.ERROR_PERMISSION_MISSING)
     private val errorProviderMissing = Error(9, ErrorCode.ERROR_PROVIDER_MISSING)
     private val errorLocationMissing = Error(1, ErrorCode.ERROR_LOCATION_MISSING)
+
+    val achievements = ArrayList<Achievement>()
 
     init {
         // Setup hardcoded icons.
@@ -90,9 +88,11 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
 
         setTargetDestination(destinations[0])
         lastDestination = destinations[0]
+
+        setupAchievements()
     }
 
-    private fun parseDestinations(d : String) {
+    private fun parseDestinations(d: String) {
         val destinationTokens = d.split("¤")
         for (destinationToken in destinationTokens) {
             if (destinationToken != "") {
@@ -117,24 +117,24 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         currentDestination = destination
     }
 
-    fun getIconResourceByName(iconName : String) : Int {
+    fun getIconResourceByName(iconName: String): Int {
         return iconIdMap[iconName]!!
     }
 
-    fun getIconResourcesAndNamesIterator() : MutableIterator<MutableMap.MutableEntry<String, Int>>{
+    fun getIconResourcesAndNamesIterator(): MutableIterator<MutableMap.MutableEntry<String, Int>> {
         return iconIdMap.entries.iterator()
     }
 
-    
-    private fun registerError(error : Error) {
+
+    private fun registerError(error: Error) {
         errorHeap.add(error)
         if (errorHeap.size == 1 && currentDestination.name != "") {
             lastDestination = currentDestination
             setTargetDestination(nullDestination)
         }
     }
-    
-    private fun unregisterError(error : Error) {
+
+    private fun unregisterError(error: Error) {
         // Error should be the same instance as the one added.
         errorHeap.remove(error)
         if (errorHeap.isEmpty()) {
@@ -146,7 +146,7 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         return bearingProvider.getDistance(destination.location)
     }
 
-    fun updateUi(resetTarget : Boolean) {
+    fun updateUi(resetTarget: Boolean) {
         if (resetTarget && currentDestination.name != "") {
             setTargetDestination(destinations[0])
         } else {
@@ -163,12 +163,18 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
             s.append("¤").append(destinations[i].getTokenString())
         }
         val sharedPreferences = activity.getPreferences(ComponentActivity.MODE_PRIVATE)
-        sharedPreferences.edit().putString("destinations",s.toString()).apply()
+        sharedPreferences.edit().putString("destinations", s.toString()).apply()
     }
 
-    fun purgePreferences() {
+    fun purgeDestinationData() {
         val sharedPreferences = activity.getPreferences(ComponentActivity.MODE_PRIVATE)
-        sharedPreferences.edit().putString("destinations","").apply()
+        sharedPreferences.edit().putString("destinations", "").apply()
+    }
+
+    fun deleteAchievementProgress() {
+        for (a in achievements) {
+            a.clearProgress()
+        }
     }
 
     fun setPermissionMissingError() {
@@ -191,9 +197,9 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
     }
 
     private class Error(
-        private val priority : Int = -1,
-        val errorCode : ErrorCode
-    ) : Comparable<Error>{
+        private val priority: Int = -1,
+        val errorCode: ErrorCode
+    ) : Comparable<Error> {
         override fun compareTo(other: Error): Int {
             return (-priority).compareTo(-other.priority)
         }
@@ -240,14 +246,22 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         }
     }
 
-    override fun distanceChanged(distance: Float) {
-        distDest.value = distance
+    override fun onLocationChanged(location: Location) {
+        // TODO: Use location to only do work when the user has moved some amount.
+        // Update distance to all destinations.
+        for (d in destinations) {
+            d.updateDistance(bearingProvider.getDistance(d.location))
+        }
+        // Set the display value.
+        distDest.value = currentDestination.stateOfDistance.value
     }
 
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
-            Lifecycle.Event.ON_PAUSE -> bearingProvider.disable()
+            Lifecycle.Event.ON_PAUSE -> {
+                bearingProvider.disable()
+            }
             Lifecycle.Event.ON_RESUME -> {
                 bearingProvider.enable()
                 if (!bearingProvider.isGPSProviderEnabled) {
@@ -256,6 +270,131 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
                 }
             }
             else -> {}
+        }
+    }
+
+    private fun findDestinationsWithNames(
+        destinationNames: Array<String>,
+        preConfiguredOnly: Boolean
+    ): Array<Destination> {
+        val result = ArrayList<Destination>()
+        for (d in destinations) {
+            if (!d.preConfigured && preConfiguredOnly) break
+            for (name in destinationNames) {
+                if (d.name == name) {
+                    result.add(d)
+                }
+            }
+        }
+        return result.toTypedArray()
+    }
+
+    private fun setupAchievements() {
+        val HOURS23 = 82800000L
+        val HOURS24 = 86400000L
+        val TIME_INFINITE = Long.MAX_VALUE
+        val sharedPreferences = activity.getPreferences(ComponentActivity.MODE_PRIVATE)
+        val destinationsKB = findDestinationsWithNames(arrayOf("KB"), true)
+        val achievementVisitKB = VisitCounterAchievement(
+            activity.getString(R.string.achievement_visit_kb_name),
+            activity.getString(R.string.achievement_visit_kb_desc),
+            0,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key),
+            destinationsKB,
+            1,
+            HOURS23
+        )
+        achievements.add(achievementVisitKB)
+        val achievementVisitKB2 = VisitCounterAchievement(
+            activity.getString(R.string.achievement_visit_kb_name2),
+            activity.getString(R.string.achievement_visit_kb_desc2),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key2), destinationsKB, 16, HOURS23
+        )
+        achievements.add(achievementVisitKB2)
+        val achievementVisitKB3 = VisitCounterAchievement(
+            activity.getString(R.string.achievement_visit_kb_name3),
+            activity.getString(R.string.achievement_visit_kb_desc3),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key3), destinationsKB, 64, HOURS23
+        )
+        achievements.add(achievementVisitKB3)
+        val achievementVisitKB4 = VisitCounterAchievement(
+            activity.getString(R.string.achievement_visit_kb_name4),
+            activity.getString(R.string.achievement_visit_kb_desc4),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key4), destinationsKB, 256, HOURS23
+        )
+        achievements.add(achievementVisitKB4)
+
+        val achievementYearKB = WeeklyVisitAchievement(
+            activity.getString(R.string.achievement_year_kb_name),
+            activity.getString(R.string.achievement_year_kb_desc),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_year_kb_key), destinationsKB, 52
+        )
+        achievements.add(achievementYearKB)
+
+        val destinationVerners = findDestinationsWithNames(arrayOf("Verners"), true)
+        val achievementVisitVerners = VisitCounterAchievement(
+            activity.getString(R.string.achievement_visit_verners_name),
+            activity.getString(R.string.achievement_visit_verners_desc),
+            0,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_verners_key),
+            destinationVerners,
+            1,
+            HOURS23
+        )
+        achievements.add(achievementVisitVerners)
+
+        val destinationsAll = findDestinationsWithNames(
+            arrayOf(
+                "KB",
+                "Hegnet",
+                "Diamanten",
+                "Diagonalen",
+                "Etheren",
+                "Verners"
+            ), true
+        )
+        val achievementVisitAll = CollectionVisitAchievement(
+            activity.getString(R.string.achievement_visit_all_name),
+            activity.getString(R.string.achievement_visit_all_desc),
+            0,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_all_key),
+            destinationsAll,
+            6,
+            TIME_INFINITE
+        )
+        achievements.add(achievementVisitAll)
+
+
+        val destinationsLyngby = findDestinationsWithNames(
+            arrayOf("KB", "Hegnet", "Diamanten", "Diagonalen", "Etheren"),
+            true
+        )
+        val achievementCrawl = CollectionVisitAchievement(
+            activity.getString(R.string.achievement_crawl_name),
+            activity.getString(R.string.achievement_crawl_desc),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_crawl_key), destinationsLyngby, 5, HOURS24
+        )
+        achievements.add(achievementCrawl)
+
+        val achievement2week = DailyVisitAchievement(
+            activity.getString(R.string.achievement_2week_kb_name),
+            activity.getString(R.string.achievement_2week_kb_desc),
+            0, sharedPreferences,
+            activity.getString(R.string.achievement_2week_kb_key), destinationsKB, 14
+        )
+        achievements.add(achievement2week)
+
+        // Run setup on all achievements.
+        for (a in achievements) {
+            a.setup()
         }
     }
 

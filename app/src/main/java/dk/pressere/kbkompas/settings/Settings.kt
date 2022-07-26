@@ -29,6 +29,7 @@ import dk.pressere.kbkompas.ui.theme.Primary
 @Composable
 fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: SettingsViewModel) {
     val showDevModeDialog = remember { mutableStateOf(false) }
+    val showDeleteAchievementDialog = remember { mutableStateOf(false) }
 
     LazyColumn {
         item {
@@ -41,6 +42,16 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
                 },
                 extraInterface = {
                     ToggleIconReactor(settingsViewModel.darkMode.value)
+                }
+            )
+        }
+        item {
+            SettingsElement(
+                title = "Slet data til bedrifter",
+                desc = "Delete achievement progress",
+                iconId = R.drawable.ic_baseline_delete_24,
+                onClick = {
+                    showDeleteAchievementDialog.value = true
                 }
             )
         }
@@ -95,10 +106,11 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
                     desc = "Delete local destination preferences",
                     iconId = R.drawable.ic_baseline_plumbing_24,
                     onClick = {
-                        compassViewModel.purgePreferences()
+                        compassViewModel.purgeDestinationData()
                     }
                 )
             }
+
         }
 
 
@@ -115,6 +127,18 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
             showDevModeDialog.value = false
             settingsViewModel.devModeDialogShown = true
             settingsViewModel.setDevMode(!settingsViewModel.devMode.value)
+        },
+        action = "Ja"
+    )
+
+    DefaultDialog(
+        showDialog = showDeleteAchievementDialog.value,
+        message = "Er du sikker på du vil slette alt data tilhørende bedrifter? Dette vil fjerne fremskridt for alle bedrifter",
+        onDismiss = { showDeleteAchievementDialog.value = false },
+        dismiss = "Nej",
+        onAction = {
+            showDeleteAchievementDialog.value = false
+            compassViewModel.deleteAchievementProgress()
         },
         action = "Ja"
     )

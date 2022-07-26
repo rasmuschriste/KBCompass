@@ -18,6 +18,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +31,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
+import dk.pressere.kbkompas.achievements.AchievementMenu
 import dk.pressere.kbkompas.compass.*
 import dk.pressere.kbkompas.settings.SettingsContent
 import dk.pressere.kbkompas.settings.SettingsViewModel
@@ -43,6 +45,15 @@ fun ScaffoldFrame(settingsViewModel: SettingsViewModel) {
     val context = LocalContext.current
 
     val compassViewModel: CompassViewModel = remember { CompassViewModel(context as Activity) }
+
+    // Make the compassViewModel lifecycle aware.
+    // It makes little sense to have here since the scaffold is always in view,
+    // but it might be useful in the future.
+    val lifeCycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifeCycleOwner) {
+        lifeCycleOwner.lifecycle.addObserver(compassViewModel)
+        onDispose { lifeCycleOwner.lifecycle.removeObserver(compassViewModel) }
+    }
 
     val showFloatingButton = remember { mutableStateOf(true) }
 
@@ -185,6 +196,7 @@ fun NavigationMainContent(
         composable("pick_destination_compass") { PickDestinationCompass(navController, compassViewModel, settingsViewModel) }
         composable("settings") { SettingsContent(compassViewModel, settingsViewModel) }
         composable("pick_destination_map") {PickDestinationShowMap(navController, compassViewModel, settingsViewModel)}
+        composable("achievements") { AchievementMenu(compassViewModel, settingsViewModel)}
     }
 }
 
@@ -317,6 +329,15 @@ fun DrawerContent(
             text = "Destinationer"
         ) {
             navigateAndClose("destinations")
+        }
+
+        Divider(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))
+
+        DrawerElement(
+            iconId = R.drawable.ic_baseline_cake_24,
+            text = "Bedrifter"
+        ) {
+            navigateAndClose("achievements")
         }
 
         Divider(modifier = Modifier.padding(top = 8.dp, bottom = 8.dp))

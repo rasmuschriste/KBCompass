@@ -3,8 +3,6 @@ package dk.pressere.kbkompas.bearing_provider;
 import android.content.Context;
 import android.hardware.GeomagneticField;
 import android.location.Location;
-import android.location.LocationManager;
-import android.util.Log;
 
 /**
  * Created by REC-PC on 24-Aug-17.
@@ -86,7 +84,7 @@ public class BearingProvider implements HeadingProvider.Callback, LocationProvid
         GeomagneticField geomagneticField = new GeomagneticField((float)currentLocation.getLatitude(), (float)currentLocation.getLongitude(), 0, System.currentTimeMillis());
         declination = geomagneticField.getDeclination();
         callback.onBearingChanged(getBearing());
-        callback.distanceChanged(getDistance());
+        callback.onLocationChanged(location);
     }
 
     public float getDistance() {
@@ -117,6 +115,6 @@ public class BearingProvider implements HeadingProvider.Callback, LocationProvid
     public interface Callback {
         void onBearingChanged(float bearing);
         void statusUpdate(int value);
-        void distanceChanged(float distance);
+        void onLocationChanged(Location location);
     }
 }

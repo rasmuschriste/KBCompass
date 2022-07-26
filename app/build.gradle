@@ -10,8 +10,8 @@ android {
         applicationId "dk.pressere.kbkompas"
         minSdk 21
         targetSdk 31
-        versionCode 23
-        versionName "2.3"
+        versionCode 26
+        versionName "2.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

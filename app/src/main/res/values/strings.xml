@@ -28,4 +28,40 @@
     <string name="actions">Handlinger</string>
     <string name="settings">Indstillinger</string>
     <string name="destinations">Destinationer</string>
+
+
+
+    <string name="achievement_visit_kb_name">Rus</string>
+    <string name="achievement_visit_kb_desc">Besøg KB en gang</string>
+    <string name="achievement_visit_kb_name2">KB Stamkunde</string>
+    <string name="achievement_visit_kb_desc2">Besøg KB 16 gange</string>
+    <string name="achievement_visit_kb_name3">KB Connoisseur</string>
+    <string name="achievement_visit_kb_desc3">Besøg KB 64 gange</string>
+    <string name="achievement_visit_kb_name4">KB Gud</string>
+    <string name="achievement_visit_kb_desc4">Besøg KB 256 gange</string>
+    <string name="achievement_visit_kb_key">achievement_visit_kb_1</string>
+    <string name="achievement_visit_kb_key2">achievement_visit_kb_16</string>
+    <string name="achievement_visit_kb_key3">achievement_visit_kb_64</string>
+    <string name="achievement_visit_kb_key4">achievement_visit_kb_256</string>
+
+    <string name="achievement_visit_verners_name">Ballademager</string>
+    <string name="achievement_visit_verners_desc">Besøg Verners Kælder på Ballarup campus</string>
+    <string name="achievement_visit_verners_key">achievement_visit_verners</string>
+
+    <string name="achievement_visit_all_name">Verdensomspænder</string>
+    <string name="achievement_visit_all_desc">Besøg KB og fredagsbarene på Ballerup og Lyngby campus</string>
+    <string name="achievement_visit_all_key">achievement_visit_all</string>
+
+    <string name="achievement_crawl_name">Motionsløber</string>
+    <string name="achievement_crawl_desc">Besøg KB og de 4 fredagsbare på Lyngby campus inden for 24 timer</string>
+    <string name="achievement_crawl_key">achievement_crawl</string>
+
+    <string name="achievement_year_kb_name">Drukmås</string>
+    <string name="achievement_year_kb_desc">Besøg KB mindst en gang hver uge i et år.</string>
+    <string name="achievement_year_kb_key">achievement_weekly_1year_kb</string>
+
+    <string name="achievement_2week_kb_name">Fortnight!</string>
+    <string name="achievement_2week_kb_desc">Besøg KB hver dag i to uger.</string>
+    <string name="achievement_2week_kb_key">achievement_daily_2weeks_kb</string>
+
 </resources>
