@@ -59,6 +59,9 @@ fun DestinationEditor(
     } else {
         remember { mutableStateOf("%.6f".format(compassViewModel.destinations[destinationIndex!!].location.latitude)) }
     }
+
+
+
     var longitude by if (destinationIndex == -1) {
         remember { mutableStateOf("%.6f".format(0.0f)) }
     } else {
@@ -95,6 +98,31 @@ fun DestinationEditor(
     var nameErrorText by remember { mutableStateOf("") }
     var addressErrorText by remember { mutableStateOf("") }
     var locationErrorText by remember { mutableStateOf("") }
+
+    // A 'setter' for latitude and longitude that checks format and ignores ','/'.'.
+    // Also removes spaces.
+    val setLatitude : (String) -> Unit = {
+        val c = it.replace(",", ".").replace(" ","")
+        latitude = c
+        if (parseGeoCoordinate(c)) {
+            latitudeError = false
+            locationErrorText = ""
+        } else {
+            latitudeError = true
+            locationErrorText = "Forkert format: 55.550000"
+        }
+    }
+    val setLongitude : (String) -> Unit = {
+        val c = it.replace(",", ".").replace(" ","")
+        longitude = c
+        if (parseGeoCoordinate(c)) {
+            longitudeError = false
+            locationErrorText = ""
+        } else {
+            longitudeError = true
+            locationErrorText = "Forkert format: 55.550000"
+        }
+    }
 
     // Check for common errors.
     if (name == "") {
@@ -339,18 +367,16 @@ fun DestinationEditor(
                             val locationAddresses = geocoder.getFromLocationName(address, 1)
                             if (locationAddresses.size != 0) {
                                 val locationAddress = locationAddresses[0]
-                                latitude = "%.6f".format(locationAddress.latitude)
-                                longitude = "%.6f".format(locationAddress.longitude)
+                                setLatitude("%.6f".format(locationAddress.latitude))
+                                setLongitude("%.6f".format(locationAddress.longitude))
                             } else {
-                                latitude = "%.6f".format(0.0f)
-                                longitude = "%.6f".format(0.0f)
+                                setLatitude("%.6f".format(0.0f))
+                                setLongitude("%.6f".format(0.0f))
                             }
                         } catch (e: IOException) {
-                            latitude = "%.6f".format(0.0f)
-                            longitude = "%.6f".format(0.0f)
+                            setLatitude("%.6f".format(0.0f))
+                            setLongitude("%.6f".format(0.0f))
                         }
-                        latitudeError = false
-                        locationErrorText = ""
                     }
                 }) {
                 Text(text = "Brug adresse  ")
@@ -366,10 +392,8 @@ fun DestinationEditor(
                     .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 2.dp),
                 enabled = enableCritical,
                 onClick = {
-                    latitude = "%.6f".format(compassViewModel.currentLat)
-                    longitude = "%.6f".format(compassViewModel.currentLong)
-                    latitudeError = false
-                    locationErrorText = ""
+                    setLatitude("%.6f".format(compassViewModel.currentLat))
+                    setLongitude("%.6f".format(compassViewModel.currentLong))
                 }) {
                 Text(text = "Brug placering ")
                 Icon(
@@ -385,14 +409,7 @@ fun DestinationEditor(
             OutlinedTextField(
                 value = latitude,
                 onValueChange = {
-                    latitude = it
-                    if (parseGeoCoordinate(it)) {
-                        latitudeError = false
-                        locationErrorText = ""
-                    } else {
-                        latitudeError = true
-                        locationErrorText = "Forkert format: 55.550000"
-                    }
+                    setLatitude(it)
                 },
                 enabled = enableCritical,
                 label = { Text("Latitude") },
@@ -423,14 +440,7 @@ fun DestinationEditor(
             OutlinedTextField(
                 value = longitude,
                 onValueChange = {
-                    longitude = it
-                    if (parseGeoCoordinate(it)) {
-                        longitudeError = false
-                        locationErrorText = ""
-                    } else {
-                        longitudeError = true
-                        locationErrorText = "Forkert format: 55.550000"
-                    }
+                    setLongitude(it)
                 },
                 enabled = enableCritical,
                 label = { Text("Longitude") },
@@ -530,16 +540,16 @@ fun DestinationEditor(
 }
 
 private fun parseGeoCoordinate(coordinate: String): Boolean {
-    coordinate.replace(",", ".")
-    val tokens = coordinate.split(".")
-    if (tokens.size != 2) return false
-    // Check that the tokens are numbers
     try {
+        // First check that it is a double'
+        coordinate.toDouble()
+        // Next, check that is correct format too.
+        val tokens = coordinate.replace(",", ".").split(".")
         val intPart = Integer.parseInt(tokens[0])
         if (intPart < -120 || intPart > 120) return false
         Integer.parseInt(tokens[1])
         if (tokens[1].length != 6) return false
-    } catch (e: Exception) {
+    } catch (e : Exception) {
         return false
     }
     return true
