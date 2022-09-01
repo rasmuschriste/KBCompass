@@ -17,7 +17,7 @@
     <string name="finding_locaiton">Finder din placering...</string>
 
     <string name="action_show_on_map">Find på kort</string>
-    <string name="action_toggle_dark_mode">Toggle dark mode 😎</string>
+    <string name="action_toggle_dark_mode">Skift til dark mode 😎</string>
     <string name="missing_app_map">Mangler applikation til at vise retning!</string>
 
     <string name="error">Fejl!</string>
@@ -31,29 +31,29 @@
 
 
 
-    <string name="achievement_visit_kb_name">Rus</string>
-    <string name="achievement_visit_kb_desc">Besøg KB en gang</string>
+    <string name="achievement_visit_kb_name">KB Rus.</string>
+    <string name="achievement_visit_kb_desc">Besøg KB en gang.</string>
     <string name="achievement_visit_kb_name2">KB Stamkunde</string>
-    <string name="achievement_visit_kb_desc2">Besøg KB 16 gange</string>
+    <string name="achievement_visit_kb_desc2">Besøg KB 16 gange.</string>
     <string name="achievement_visit_kb_name3">KB Connoisseur</string>
-    <string name="achievement_visit_kb_desc3">Besøg KB 64 gange</string>
+    <string name="achievement_visit_kb_desc3">Besøg KB 64 gange.</string>
     <string name="achievement_visit_kb_name4">KB Gud</string>
-    <string name="achievement_visit_kb_desc4">Besøg KB 256 gange</string>
+    <string name="achievement_visit_kb_desc4">Besøg KB 256 gange.</string>
     <string name="achievement_visit_kb_key">achievement_visit_kb_1</string>
     <string name="achievement_visit_kb_key2">achievement_visit_kb_16</string>
     <string name="achievement_visit_kb_key3">achievement_visit_kb_64</string>
     <string name="achievement_visit_kb_key4">achievement_visit_kb_256</string>
 
     <string name="achievement_visit_verners_name">Ballademager</string>
-    <string name="achievement_visit_verners_desc">Besøg Verners Kælder på Ballarup campus</string>
+    <string name="achievement_visit_verners_desc">Besøg Verners Kælder på Ballerup campus.</string>
     <string name="achievement_visit_verners_key">achievement_visit_verners</string>
 
     <string name="achievement_visit_all_name">Verdensomspænder</string>
-    <string name="achievement_visit_all_desc">Besøg KB og fredagsbarene på Ballerup og Lyngby campus</string>
+    <string name="achievement_visit_all_desc">Besøg KB og fredagsbarene på Ballerup og Lyngby campus.</string>
     <string name="achievement_visit_all_key">achievement_visit_all</string>
 
     <string name="achievement_crawl_name">Motionsløber</string>
-    <string name="achievement_crawl_desc">Besøg KB og de 4 fredagsbare på Lyngby campus inden for 24 timer</string>
+    <string name="achievement_crawl_desc">Besøg KB og de 4 fredagsbare på Lyngby campus inden for 24 timer.</string>
     <string name="achievement_crawl_key">achievement_crawl</string>
 
     <string name="achievement_year_kb_name">Drukmås</string>

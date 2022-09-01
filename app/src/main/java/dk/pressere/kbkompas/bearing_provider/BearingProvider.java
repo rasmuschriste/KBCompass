@@ -4,10 +4,6 @@ import android.content.Context;
 import android.hardware.GeomagneticField;
 import android.location.Location;
 
-/**
- * Created by REC-PC on 24-Aug-17.
- */
-
 public class BearingProvider implements HeadingProvider.Callback, LocationProvider.Callback{
 
     public static final int LOCATION_MISSING = 0;

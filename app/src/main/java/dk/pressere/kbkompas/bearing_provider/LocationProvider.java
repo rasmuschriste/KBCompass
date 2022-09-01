@@ -11,10 +11,6 @@ import android.os.SystemClock;
 
 import androidx.core.app.ActivityCompat;
 
-/**
- * Created by REC-PC on 24-Aug-17.
- */
-
 public class LocationProvider implements LocationListener {
 
     public static final int GPS_PROVIDER_DISABLED = 1000;

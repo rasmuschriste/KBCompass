@@ -16,3 +16,5 @@ val White = Color(0xFFffffff)
 
 val SnackBarLight = Color(0xffd0d0d0)
 val SnackBarDark = Color(0xff333333)
+
+val Gold = Color(0xFFFFD115)

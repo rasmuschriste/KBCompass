@@ -3,10 +3,7 @@ package dk.pressere.kbkompas.settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,18 +15,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import dk.pressere.kbkompas.R
 import dk.pressere.kbkompas.compass.CompassViewModel
 import dk.pressere.kbkompas.components.DefaultDialog
 import dk.pressere.kbkompas.ui.theme.CompassBackgroundDark
 import dk.pressere.kbkompas.ui.theme.CompassBackgroundLight
 import dk.pressere.kbkompas.ui.theme.Primary
+import java.security.MessageDigest
 
 
 @Composable
 fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: SettingsViewModel) {
     val showDevModeDialog = remember { mutableStateOf(false) }
     val showDeleteAchievementDialog = remember { mutableStateOf(false) }
+    val showCheatCodeDialog = remember { mutableStateOf(false) }
 
     LazyColumn {
         item {
@@ -47,8 +47,8 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
         }
         item {
             SettingsElement(
-                title = "Slet data til bedrifter",
-                desc = "Delete achievement progress",
+                title = "Slet bedriftdata",
+                desc = "Slet data brugt af bedrifter",
                 iconId = R.drawable.ic_baseline_delete_24,
                 onClick = {
                     showDeleteAchievementDialog.value = true
@@ -57,7 +57,7 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
         }
         item {
             SettingsElement(
-                title = "UdviklerTilstand",
+                title = "Udviklertilstand",
                 desc = "Skift til udviklertilstand",
                 iconId = R.drawable.ic_baseline_plumbing_24,
                 onClick = {
@@ -110,6 +110,16 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
                     }
                 )
             }
+            item {
+                SettingsElement(
+                    title = "Cheats",
+                    desc = "Unlock achievements with codes",
+                    iconId = R.drawable.ic_baseline_plumbing_24,
+                    onClick = {
+                        showCheatCodeDialog.value = true
+                    }
+                )
+            }
 
         }
 
@@ -142,6 +152,58 @@ fun SettingsContent(compassViewModel: CompassViewModel, settingsViewModel: Setti
         },
         action = "Ja"
     )
+
+
+    // CheatCodeDialog
+    if (showCheatCodeDialog.value) {
+        Dialog(onDismissRequest = { showCheatCodeDialog.value = false }) {
+            val cheatCodeTextField = remember { mutableStateOf("") }
+            Surface(color = MaterialTheme.colors.background) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    TextField(
+                        value = cheatCodeTextField.value,
+                        onValueChange = { cheatCodeTextField.value = it })
+                    Button(onClick = { // Parse code
+                        val seed = byteArrayOf(
+                            -119, -128, 119, 46, 71, 63, -120, 25, -91, -44,
+                            -108, 14, 13, -78, 122, -63
+                        )
+                        val unlockAllHash = byteArrayOf(
+                            30, -16, -3, 103, 25, -110, -87, 9, -15, -53, 67, 127, 105, -36, -88,
+                            79, -26, -36, -69, -42, 95, -108, 41, -1, 109, -75, 2, 82, 33, -31, 16,
+                            2, 127, 0, -68, -82, -32, 79, -116, 44, -1, -5, -33, 16, 19, -54, -17,
+                            -90, 25, 30, -106, 99, -49, 114, 42, 59, -97, -6, 30, -97, 22, -5, 37, 7
+                        )
+
+                        val code: ByteArray = cheatCodeTextField.value.toByteArray()
+                        val md = MessageDigest.getInstance("SHA-512")
+                        val hashedCode: ByteArray = md.digest(seed + code)
+
+                        // Code for generating new hashes
+                        /*
+                        var arrayAsString = ""
+                        for (i in hashedCode) {
+                            arrayAsString = arrayAsString + i + ", "
+                        }
+                        Log.i("OutHash", arrayAsString)
+                        */
+
+                        if (hashedCode contentEquals unlockAllHash) {
+                            compassViewModel.completeAllAchievements()
+                        }
+                        // More codes
+
+                        // Close window
+                        showCheatCodeDialog.value = false
+
+                    }) {
+                        Text(text = "OK")
+                    }
+                }
+            }
+        }
+    }
+
 
 }
 

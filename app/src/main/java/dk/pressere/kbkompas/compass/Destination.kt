@@ -1,10 +1,9 @@
 package dk.pressere.kbkompas.compass
 
 import android.location.Location
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 
-val TARGET_VERSION_CODE: Int = 2
+val TARGET_VERSION_CODE: Int = 3
 
 class Destination(
     var versionCode: Int = TARGET_VERSION_CODE,
@@ -56,7 +55,8 @@ class Destination(
     }
 
     fun getTokenString() : String {
-        // Purge invalid charters from strings. This is not the correct way to solve but will likely not cause problems
+        // Purge invalid charters from strings. This is not the correct way to solve but will likely
+        // not cause problems as it just means that these characters are removed from names.
         val nameSafe = name.replace("|","").replace("¤","")
         val addressSafe = address.replace("|","").replace("¤","")
         return "$versionCode|$preConfigured|$nameSafe|${location.latitude}|${location.longitude}|$addressSafe|${stateOfIsFavorite.value}|$iconId"
@@ -80,12 +80,19 @@ class Destination(
                 if (name == "KB") iconId = "local_bar"
                 versionCode = 2
             }
+            2 -> {
+                // v 3 location "Diamanten" to its new location.
+                if (name == "Diamanten") {
+                    location.latitude = 55.782960
+                    location.longitude = 12.521320
+                }
+                versionCode = 3
+            }
         }
         update()
     }
 
     companion object {
-
         fun generateFromToken(s : String) : Destination{
             // IconIDMap maps iconId strings to drawable resource ints.
 

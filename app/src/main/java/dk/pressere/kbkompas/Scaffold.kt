@@ -3,6 +3,7 @@ package dk.pressere.kbkompas
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,11 +27,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import dk.pressere.kbkompas.achievements.AchievementMenu
 import dk.pressere.kbkompas.compass.*
 import dk.pressere.kbkompas.settings.SettingsContent
@@ -44,7 +47,11 @@ fun ScaffoldFrame(settingsViewModel: SettingsViewModel) {
 
     val context = LocalContext.current
 
-    val compassViewModel: CompassViewModel = remember { CompassViewModel(context as Activity) }
+    val compassViewModel: CompassViewModel =
+        viewModel(factory = CompassViewModelFactory(context as Activity))
+    compassViewModel.toastMessage.observe(context as LifecycleOwner) { event ->
+        event.getContent()?.let { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
+    }
 
     // Make the compassViewModel lifecycle aware.
     // It makes little sense to have here since the scaffold is always in view,
@@ -114,7 +121,14 @@ fun ScaffoldFrame(settingsViewModel: SettingsViewModel) {
 
     Scaffold(
         topBar = { TopBar(openDrawer) },
-        drawerContent = { DrawerContent(settingsViewModel, compassViewModel, navController, closeDrawer) },
+        drawerContent = {
+            DrawerContent(
+                settingsViewModel,
+                compassViewModel,
+                navController,
+                closeDrawer
+            )
+        },
         floatingActionButton = {
             FloatingButton(
                 showFloatingButton.value,
@@ -126,8 +140,13 @@ fun ScaffoldFrame(settingsViewModel: SettingsViewModel) {
             )
         },
         scaffoldState = scaffoldState,
-    ) {
-        NavigationMainContent(navController, compassViewModel, settingsViewModel)
+    ) { paddingValues ->
+        NavigationMainContent(
+            Modifier.padding(paddingValues),
+            navController = navController,
+            compassViewModel = compassViewModel,
+            settingsViewModel = settingsViewModel
+        )
     }
 
     // Check for permission and ask user if not given
@@ -180,23 +199,51 @@ fun ScaffoldFrame(settingsViewModel: SettingsViewModel) {
 @ExperimentalComposeUiApi
 @Composable
 fun NavigationMainContent(
+    modifier: Modifier,
     navController: NavHostController,
     compassViewModel: CompassViewModel,
     settingsViewModel: SettingsViewModel,
 ) {
-    NavHost(navController = navController, startDestination = "compass") {
+    NavHost(
+        modifier = modifier, navController = navController, startDestination = "compass"
+    ) {
         composable("compass") { CompassContent(compassViewModel) }
         composable(
             "destination_editor/{destination_index}",
-            arguments = listOf(navArgument("destination_index") {type = androidx.navigation.NavType.Companion.IntType})
+            arguments = listOf(navArgument("destination_index") {
+                type = androidx.navigation.NavType.Companion.IntType
+            })
         ) { backStackEntry ->
-            DestinationEditor(navController, compassViewModel, settingsViewModel, backStackEntry.arguments?.getInt("destination_index"))
+            DestinationEditor(
+                navController,
+                compassViewModel,
+                settingsViewModel,
+                backStackEntry.arguments?.getInt("destination_index")
+            )
         }
-        composable("destinations") { AdvDestinationPicker(navController, compassViewModel, settingsViewModel) }
-        composable("pick_destination_compass") { PickDestinationCompass(navController, compassViewModel, settingsViewModel) }
+        composable("destinations") {
+            AdvDestinationPicker(
+                navController,
+                compassViewModel,
+                settingsViewModel
+            )
+        }
+        composable("pick_destination_compass") {
+            PickDestinationCompass(
+                navController,
+                compassViewModel,
+                settingsViewModel
+            )
+        }
         composable("settings") { SettingsContent(compassViewModel, settingsViewModel) }
-        composable("pick_destination_map") {PickDestinationShowMap(navController, compassViewModel, settingsViewModel)}
-        composable("achievements") { AchievementMenu(compassViewModel, settingsViewModel)}
+        composable("pick_destination_map") {
+            PickDestinationShowMap(
+                navController,
+                compassViewModel,
+                settingsViewModel
+            )
+        }
+        composable("achievements") { AchievementMenu(compassViewModel, settingsViewModel) }
     }
 }
 
@@ -300,9 +347,11 @@ fun DrawerContent(
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp)
             )
         }
-        Box(modifier = Modifier
-            .padding(bottom = 10.dp)
-            .height(20.dp), contentAlignment = Alignment.BottomStart) {
+        Box(
+            modifier = Modifier
+                .padding(bottom = 10.dp)
+                .height(20.dp), contentAlignment = Alignment.BottomStart
+        ) {
             /*Text(
                 text = stringResource(id = R.string.app_name),
                 fontSize = 14.sp,

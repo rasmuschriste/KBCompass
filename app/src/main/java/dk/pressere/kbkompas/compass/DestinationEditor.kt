@@ -1,14 +1,10 @@
 package dk.pressere.kbkompas.compass
 
 import android.location.Geocoder
-import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -17,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -27,8 +22,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import dk.pressere.kbkompas.R
 import dk.pressere.kbkompas.components.DefaultDialog
@@ -37,7 +30,6 @@ import dk.pressere.kbkompas.settings.SettingsViewModel
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-@OptIn(ExperimentalFoundationApi::class)
 @ExperimentalComposeUiApi
 @Composable
 fun DestinationEditor(
@@ -48,6 +40,9 @@ fun DestinationEditor(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    val geocoder = Geocoder(LocalContext.current)
+    val coroutineScope = rememberCoroutineScope()
 
     var name by if (destinationIndex == -1) {
         remember { (mutableStateOf("")) }
@@ -136,7 +131,7 @@ fun DestinationEditor(
 
 
         LazyVerticalGrid (
-            cells = GridCells.Fixed(3),
+            columns = GridCells.Fixed(3),
             contentPadding = PaddingValues(4.dp)
                 ) {
             for (iconPair in iconsIterator) {
@@ -315,9 +310,6 @@ fun DestinationEditor(
 
         Divider()
 
-        val geocoder = Geocoder(LocalContext.current)
-        val coroutineScope = rememberCoroutineScope()
-
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -329,10 +321,14 @@ fun DestinationEditor(
                     .wrapContentWidth(Alignment.Start)
                     .padding(start = 12.dp, end = 8.dp, top = 16.dp, bottom = 2.dp)
             )
+            // Space for a button or something.
+        }
+
+        Row (Modifier.fillMaxWidth()) {
             Button(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentWidth(Alignment.End)
+                    .weight(1f)
                     .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 2.dp),
                 enabled = enableCritical,
                 onClick = {
@@ -357,9 +353,27 @@ fun DestinationEditor(
                         locationErrorText = ""
                     }
                 }) {
-                Text(text = "Søg efter adressen ")
+                Text(text = "Brug adresse  ")
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_search_24),
+                    contentDescription = "Vælg på kort"
+                )
+            }
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(start = 8.dp, end = 8.dp, top = 16.dp, bottom = 2.dp),
+                enabled = enableCritical,
+                onClick = {
+                    latitude = "%.6f".format(compassViewModel.currentLat)
+                    longitude = "%.6f".format(compassViewModel.currentLong)
+                    latitudeError = false
+                    locationErrorText = ""
+                }) {
+                Text(text = "Brug placering ")
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_location_on_24),
                     contentDescription = "Vælg på kort"
                 )
             }

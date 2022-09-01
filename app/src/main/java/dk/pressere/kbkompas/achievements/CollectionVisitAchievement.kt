@@ -16,6 +16,7 @@ class CollectionVisitAchievement(
     sharedPreferencesKey: String,
     destinations: Array<Destination>,
     progressForCompletion: Int,
+    onCompletion : (String) -> Unit,
     private val destinationTimeoutMillis : Long
 ) : Achievement(
     name,
@@ -24,7 +25,8 @@ class CollectionVisitAchievement(
     sharedPreferences,
     sharedPreferencesKey,
     destinations,
-    progressForCompletion
+    progressForCompletion,
+    onCompletion
 ) {
     private val timeStamps : LongArray = LongArray(destinations.size) {-1}
 

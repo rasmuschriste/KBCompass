@@ -11,7 +11,6 @@ import dk.pressere.kbkompas.R
 import dk.pressere.kbkompas.achievements.*
 import dk.pressere.kbkompas.bearing_provider.BearingProvider
 import java.util.*
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 // Activity is needed here for the location system. Might remove later.
@@ -19,6 +18,10 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
     LifecycleEventObserver {
     private var bearingOffset = 0f
     private var bearingCurrent = 0f
+    var currentLat : Double = 0.0
+        private set
+    var currentLong : Double = 0.0
+        private set
 
     private val nullDestination = Destination(name = "")
 
@@ -47,6 +50,8 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
     private val errorLocationMissing = Error(1, ErrorCode.ERROR_LOCATION_MISSING)
 
     val achievements = ArrayList<Achievement>()
+
+    val toastMessage = MutableLiveData<Event<String>>()
 
     init {
         // Setup hardcoded icons.
@@ -247,6 +252,8 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
     }
 
     override fun onLocationChanged(location: Location) {
+        currentLat = location.latitude
+        currentLong = location.longitude
         // TODO: Use location to only do work when the user has moved some amount.
         // Update distance to all destinations.
         for (d in destinations) {
@@ -289,50 +296,79 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         return result.toTypedArray()
     }
 
+    fun completeAllAchievements() {
+        for (a in achievements) {
+            a.updateProgress(Int.MAX_VALUE)
+        }
+    }
+
     private fun setupAchievements() {
         val HOURS23 = 82800000L
         val HOURS24 = 86400000L
         val TIME_INFINITE = Long.MAX_VALUE
         val sharedPreferences = activity.getPreferences(ComponentActivity.MODE_PRIVATE)
+
+        val onAchievementComplete: (String) -> Unit = {
+            toastMessage.value = Event("Ny bedrift: $it")
+        }
+
+
         val destinationsKB = findDestinationsWithNames(arrayOf("KB"), true)
         val achievementVisitKB = VisitCounterAchievement(
             activity.getString(R.string.achievement_visit_kb_name),
             activity.getString(R.string.achievement_visit_kb_desc),
-            0,
+            R.drawable.ic_outline_grass_24,
             sharedPreferences,
             activity.getString(R.string.achievement_visit_kb_key),
             destinationsKB,
             1,
-            HOURS23
+            onAchievementComplete,
+            HOURS23,
         )
         achievements.add(achievementVisitKB)
         val achievementVisitKB2 = VisitCounterAchievement(
             activity.getString(R.string.achievement_visit_kb_name2),
             activity.getString(R.string.achievement_visit_kb_desc2),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_visit_kb_key2), destinationsKB, 16, HOURS23
+            R.drawable.ic_baseline_anchor_24,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key2),
+            destinationsKB,
+            16,
+            onAchievementComplete,
+            HOURS23
         )
         achievements.add(achievementVisitKB2)
         val achievementVisitKB3 = VisitCounterAchievement(
             activity.getString(R.string.achievement_visit_kb_name3),
             activity.getString(R.string.achievement_visit_kb_desc3),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_visit_kb_key3), destinationsKB, 64, HOURS23
+            R.drawable.ic_baseline_assist_walker_24,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key3),
+            destinationsKB,
+            64,
+            onAchievementComplete,
+            HOURS23
         )
         achievements.add(achievementVisitKB3)
         val achievementVisitKB4 = VisitCounterAchievement(
             activity.getString(R.string.achievement_visit_kb_name4),
             activity.getString(R.string.achievement_visit_kb_desc4),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_visit_kb_key4), destinationsKB, 256, HOURS23
+            R.drawable.ic_baseline_emoji_events_24,
+            sharedPreferences,
+            activity.getString(R.string.achievement_visit_kb_key4),
+            destinationsKB,
+            256,
+            onAchievementComplete,
+            HOURS23
         )
         achievements.add(achievementVisitKB4)
 
         val achievementYearKB = WeeklyVisitAchievement(
             activity.getString(R.string.achievement_year_kb_name),
             activity.getString(R.string.achievement_year_kb_desc),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_year_kb_key), destinationsKB, 52
+            R.drawable.ic_baseline_rocket_launch_24, sharedPreferences,
+            activity.getString(R.string.achievement_year_kb_key), destinationsKB, 52,
+            onAchievementComplete
         )
         achievements.add(achievementYearKB)
 
@@ -340,11 +376,12 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         val achievementVisitVerners = VisitCounterAchievement(
             activity.getString(R.string.achievement_visit_verners_name),
             activity.getString(R.string.achievement_visit_verners_desc),
-            0,
+            R.drawable.ic_baseline_agriculture_24,
             sharedPreferences,
             activity.getString(R.string.achievement_visit_verners_key),
             destinationVerners,
             1,
+            onAchievementComplete,
             HOURS23
         )
         achievements.add(achievementVisitVerners)
@@ -362,11 +399,12 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         val achievementVisitAll = CollectionVisitAchievement(
             activity.getString(R.string.achievement_visit_all_name),
             activity.getString(R.string.achievement_visit_all_desc),
-            0,
+            R.drawable.ic_baseline_public_24,
             sharedPreferences,
             activity.getString(R.string.achievement_visit_all_key),
             destinationsAll,
             6,
+            onAchievementComplete,
             TIME_INFINITE
         )
         achievements.add(achievementVisitAll)
@@ -379,16 +417,25 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         val achievementCrawl = CollectionVisitAchievement(
             activity.getString(R.string.achievement_crawl_name),
             activity.getString(R.string.achievement_crawl_desc),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_crawl_key), destinationsLyngby, 5, HOURS24
+            R.drawable.ic_baseline_directions_run_24,
+            sharedPreferences,
+            activity.getString(R.string.achievement_crawl_key),
+            destinationsLyngby,
+            5,
+            onAchievementComplete,
+            HOURS24
         )
         achievements.add(achievementCrawl)
 
         val achievement2week = DailyVisitAchievement(
             activity.getString(R.string.achievement_2week_kb_name),
             activity.getString(R.string.achievement_2week_kb_desc),
-            0, sharedPreferences,
-            activity.getString(R.string.achievement_2week_kb_key), destinationsKB, 14
+            R.drawable.ic_baseline_alarm_24,
+            sharedPreferences,
+            activity.getString(R.string.achievement_2week_kb_key),
+            destinationsKB,
+            14,
+            onAchievementComplete
         )
         achievements.add(achievement2week)
 
@@ -398,4 +445,10 @@ class CompassViewModel(val activity: Activity) : ViewModel(), BearingProvider.Ca
         }
     }
 
+}
+
+class CompassViewModelFactory(private val activity: Activity) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return CompassViewModel(activity) as T
+    }
 }

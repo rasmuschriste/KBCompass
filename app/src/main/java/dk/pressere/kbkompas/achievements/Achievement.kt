@@ -13,10 +13,11 @@ abstract class Achievement(
     val name: String,
     val description: String,
     val drawableIcon: Int,
-    val sharedPreferences: SharedPreferences,
-    val sharedPreferencesKey: String,
+    private val sharedPreferences: SharedPreferences,
+    private val sharedPreferencesKey: String,
     protected val destinations: Array<Destination>,
-    val progressForCompletion: Int
+    val progressForCompletion: Int,
+    val onCompletion : (String) -> Unit,
 ) : DestinationDistanceListener {
     val currentProgressState = mutableStateOf(0)
     val isCompleteState = mutableStateOf(false)
@@ -29,6 +30,7 @@ abstract class Achievement(
         if (!isCompleteState.value) {
             currentProgressState.value = min(progress, progressForCompletion)
             if (currentProgressState.value == progressForCompletion) {
+                onCompletion(name)
                 isCompleteState.value = true
                 deregister()
             }

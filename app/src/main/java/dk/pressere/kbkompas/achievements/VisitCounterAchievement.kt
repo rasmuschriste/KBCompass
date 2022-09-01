@@ -14,6 +14,7 @@ class VisitCounterAchievement(
     sharedPreferencesKey: String,
     destinations: Array<Destination>,
     progressForCompletion: Int,
+    onCompletion : (String) -> Unit,
     private val timeBetweenVisitsMillis: Long
 ) : Achievement(
     name,
@@ -22,7 +23,8 @@ class VisitCounterAchievement(
     sharedPreferences,
     sharedPreferencesKey,
     destinations,
-    progressForCompletion
+    progressForCompletion,
+    onCompletion
 ) {
 
     private var lastVisit : Long = 0

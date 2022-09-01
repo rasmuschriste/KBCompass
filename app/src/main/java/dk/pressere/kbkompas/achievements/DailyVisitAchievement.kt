@@ -12,6 +12,7 @@ class DailyVisitAchievement(
     sharedPreferencesKey: String,
     destinations: Array<Destination>,
     progressForCompletion: Int,
+    onCompletion : (String) -> Unit,
 
     ) : Achievement(
     name,
@@ -20,7 +21,8 @@ class DailyVisitAchievement(
     sharedPreferences,
     sharedPreferencesKey,
     destinations,
-    progressForCompletion
+    progressForCompletion,
+    onCompletion
 ) {
     private var lastVisitTime = Calendar.getInstance()
 
